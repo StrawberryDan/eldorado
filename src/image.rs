@@ -1,16 +1,65 @@
-use std::{path::Path, fs::File, io::Read};
+use std::{path::Path, fs::File, io::Read, fmt::Formatter};
 use png::{Decoder, Encoder, ColorType, BitDepth};
 
-#[derive(Copy, Clone, Debug)]
+/// Color is represented using RGB8.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Color(u8, u8, u8);
 
+/// Rectangular images represented using RGB8.
 pub struct Image {
     width: usize,
     height: usize,
     data: Vec<Color>,
 }
 
+impl std::str::FromStr for Color {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut transformed: &str = &s.trim().to_lowercase();
+        if transformed.starts_with("0x") { transformed = transformed.strip_prefix("0x").unwrap() }
+        if transformed.starts_with("#") { transformed = transformed.strip_prefix("#").unwrap() }
+        if transformed.len() != 6 { return Err(String::from("Invalid length for color hex code")); }
+        let as_number = usize::from_str_radix(transformed, 16).map_err(|e| e.to_string())?;
+        let r = (((0b1111_1111 << 16) & as_number) >> 16) as u8; 
+        let g = (((0b1111_1111 <<  8) & as_number) >>  8) as u8; 
+        let b = (((0b1111_1111 <<  0) & as_number) >>  0) as u8;
+        return Ok(Color(r, g, b));
+    }
+}
+
+impl From<[u8; 3]> for Color {
+    fn from(v: [u8; 3]) -> Self {
+        Color(v[0], v[1], v[2])
+    }
+}
+
+impl std::fmt::LowerHex for Color {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        std::fmt::LowerHex::fmt(&self.0, f)?;
+        std::fmt::LowerHex::fmt(&self.0, f)?;
+        std::fmt::LowerHex::fmt(&self.0, f)?;
+        Ok(())
+    }
+}
+
+impl std::fmt::UpperHex for Color {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
+        std::fmt::UpperHex::fmt(&self.0, f)?;
+        std::fmt::UpperHex::fmt(&self.1, f)?;
+        std::fmt::UpperHex::fmt(&self.2, f)?;
+        Ok(())
+    }
+}
+
+impl std::fmt::Display for Color {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        std::fmt::UpperHex::fmt(&self, f)?;
+        Ok(())
+    }
+}
+
 impl Image {
+    /// Creates a new all black image
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             width, height,
@@ -18,6 +67,8 @@ impl Image {
         }
     }
 
+    /// Loads an image from a file.
+    /// Currently only supports png file.
     pub fn from_file(file: impl AsRef<Path>) -> Result<Self, String> {
         let decoder = {
             let file = File::open(file).map_err(|e| e.to_string())?;
@@ -94,8 +145,8 @@ impl Image {
                     for i in 1..=0 {
                         let val = (byte[0] & (0b1111 << 4*i)) >> 4*i;
                         let val = val * (u8::MAX / 16);
-
                         pixels.push(Color(val, val, val));
+
 
                         if pixels.len() == pixels.capacity() { break; }
                     }
@@ -176,10 +227,14 @@ impl Image {
 
         Ok(Image{width: info.width as usize, height: info.height as usize, data: pixels})
     }
-
+    
+    /// Getter for image width
     pub fn width(&self) -> usize { self.width }
+    /// Getter for image height
     pub fn height(&self) -> usize { self.height }
 
+    /// Writes the image to a file
+    /// Currently only supports png files.
     pub fn write_to_file(&self, file: impl AsRef<Path>) -> Result<(), String> {
         let mut encoder = {
             let file = File::create(file).map_err(|e| e.to_string())?;
@@ -207,6 +262,17 @@ impl Image {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn color_parsing() {
+        use std::str::FromStr;
+        let a = Color::from_str("0xFFFFFF").unwrap();
+        assert_eq!(Color(255, 255, 255), a);
+        let b = Color::from_str("#79a9d9").unwrap();
+        assert_eq!(Color(121, 169, 217), b);
+        let c = Color::from_str("548941").unwrap();
+        assert_eq!(Color(84, 137, 65), c);
+    }
 
     #[test]
     fn read_image_from_file() {
