@@ -233,6 +233,25 @@ impl Image {
     /// Getter for image height
     pub fn height(&self) -> usize { self.height }
 
+    /// Returns the pixel at a given coordinate. Returns None if out of bounds.
+    pub fn pixel_at(&self, x: usize, y: usize) -> Option<Color> {
+        if x < self.width && y < self.height {
+            Some(self.data[x + y * self.width])
+        } else {
+            None
+        }
+    }
+    
+    /// Sets the pixel at a givent coordinate. Returns and error if out of bounds.
+    pub fn set_pixel_at(&mut self, x: usize, y: usize, c: Color) -> Result<(), String> {
+        if x < self.width && y < self.height {
+            self.data[x + y * self.width] = c;
+            Ok(())
+        } else {
+            Err(String::from("Coordinate is out of bounds"))
+        }
+    }
+
     /// Writes the image to a file
     /// Currently only supports png files.
     pub fn write_to_file(&self, file: impl AsRef<Path>) -> Result<(), String> {
