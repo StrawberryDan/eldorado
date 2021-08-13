@@ -20,8 +20,17 @@ impl HeightMap {
     pub fn height(&self) -> usize { self.height }
     /// Gets a reference to the internal data values.
     pub fn data(&self) -> &Vec<u16> { &self.data }
-    /// Mutable reference to the internal data values.
-    pub fn data_mut(&mut self) -> &mut Vec<u16> { &mut self.data }
+
+    /// Sets the data to a difference vector of height values.
+    /// Returns Err if the vector is the incorrect length.
+    pub fn set_data(&mut self, data: Vec<u16>) -> Result<(), ()> {
+        if data.len() == self.width * self.height {
+            self.data = data;
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
 
 
     /// Gets the height of a cell at the given coordinate.
@@ -109,7 +118,6 @@ impl HeightMap {
         if x <= 0 || x >= self.width() - 1 || y <= 0 || y >= self.height() - 1 {
             return None;
         } else {
-            let v = self.height_at(x, y)? as f64;
             let l = self.height_at(x - 1, y)? as f64;
             let r = self.height_at(x + 1, y)? as f64;
             let t = self.height_at(x, y - 1)? as f64;

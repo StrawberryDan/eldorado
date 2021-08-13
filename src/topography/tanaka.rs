@@ -1,11 +1,18 @@
 use super::*;
 
 pub struct Settings {
+    /// Number of contour lines between 0 and u16::MAX.
     line_divisions: u16,
+    /// Color of points facing the light dir.
     light_color: Color,
+    /// Color of points facing away from the light dir.
     dark_color: Color,
+    /// Color to point cells with no contour line on them.
     background_color: Color,
+    /// Direction that light will shine from in image space.
     light_dir: Vector<2>,
+
+    cleaning_factor: usize,
 }
 
 impl Default for Settings {
@@ -16,43 +23,47 @@ impl Default for Settings {
             dark_color: Color::from([0.0, 0.0, 0.0]),
             background_color: Color::from([0.0, 0.0, 0.0, 0.0]),
             light_dir: Vector::from([1.0, 1.0]),
+            cleaning_factor: 2,
         }
     }
 }
 
 pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
-    let mut contours = Image::new(heightmap.width(), heightmap.height()).fill(settings.background_color);
+    let mut tanaka = Image::new(heightmap.width(), heightmap.height());
 
-    let mut leveled = heightmap.clone();
-    *leveled.data_mut() = leveled.data().iter().map(|v| v / (u16::MAX / settings.line_divisions)).collect();
-   
+    let contour_line_color = Color::from([1.0, 0.0, 0.0]);
+    let contours = super::generate_contour_layer(heightmap, super::ContourSettings {
+        line_divisions: settings.line_divisions,
+        line_color: contour_line_color,
+        cleaning_factor: settings.cleaning_factor,
+        ..Default::default()
+    });
+
     for x in 0..heightmap.width() {
         for y in 0..heightmap.height() {
-            let v = leveled.height_at(x, y).unwrap();
-            let neighbours = leveled.orthoganal_neighbours(x, y);
-            let count = neighbours.iter().filter(|(_, nv)| v > *nv).count();
-
-            if count > 0 && count < 8 {
+            if contours.pixel_at(x, y).unwrap() == contour_line_color {
+                // Work out light value
                 let normal = heightmap.normal_at(x, y);
-                
                 let light = match normal {
                     Some(normal) => Vector::dot(settings.light_dir.normalise(), normal),
                     None => continue,
                 };
 
+                // Paint cell
                 let c = if light < 0.0 {
                     Color::mix(settings.background_color, settings.light_color, -light)
                 } else {
                     Color::mix(settings.background_color, settings.dark_color, light)
                 };
 
-
-                contours.set_pixel_at(x, y, c).unwrap();
+                tanaka.set_pixel_at(x, y, c).unwrap();
+            } else {
+                tanaka.set_pixel_at(x, y, settings.background_color).unwrap();
             }
         }
     }
 
-    return contours;
+    return tanaka;
 }
 
 #[cfg(test)]

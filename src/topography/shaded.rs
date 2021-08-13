@@ -1,8 +1,14 @@
 use super::*;
 
 pub struct Settings {
+    /// Direction in image space from where light will shine
     light_dir: Vector<2>,
+    /// Color to use for cells with no shading.
     background_color: Color,
+    /// Color to use on cells facing the light.
+    light_color: Color,
+    /// Color to use for cells facing away from the light.
+    dark_color: Color,
 }
 
 impl Default for Settings {
@@ -10,6 +16,8 @@ impl Default for Settings {
         Settings {
             light_dir: Vector::from([1.0, 1.0]).normalise(),
             background_color: Color::from([0.0, 0.0, 0.0, 0.0]),
+            light_color: Color::from([1.0, 1.0, 1.0, 1.0]),
+            dark_color: Color::from([0.0, 0.0, 0.0, 1.0]),
         }
     }
 }
@@ -19,17 +27,18 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
 
     for x in 0..heightmap.width() {
         for y in 0..heightmap.height() {
+            // Work out lighting value
             let norm = heightmap.normal_at(x, y);
-
-            let mut shading = match norm {
+            let shading = match norm {
                 Some(norm) => Vector::dot(norm, settings.light_dir),
                 None => continue,
             };
 
+            // Interpolate between colors
             let color = if shading < 0.0 {
-                Color::mix(settings.background_color, Color::from([255u8, 255, 255]), -shading)
+                Color::mix(settings.background_color, settings.light_color, -shading)
             } else {
-                Color::mix(settings.background_color, Color::from([0u8, 0, 0]), shading)
+                Color::mix(settings.background_color, settings.dark_color, shading)
             };
 
             result.set_pixel_at(x, y, color).unwrap();

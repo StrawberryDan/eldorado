@@ -387,7 +387,7 @@ mod test {
     fn write_image_to_file() {
         let a = Image::from_file("image/test.png").unwrap();
         a.write_to_file("image/test.out.png").unwrap();
-        let b = Image::from_file("image/test.png.out").unwrap();
+        let b = Image::from_file("image/test.out.png").unwrap();
 
         assert_eq!(a.width(), b.width());
         assert_eq!(a.height(), b.height());
