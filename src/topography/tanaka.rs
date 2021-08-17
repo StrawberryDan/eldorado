@@ -51,9 +51,9 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
 
                 // Paint cell
                 let c = if light < 0.0 {
-                    Color::mix(settings.background_color, settings.light_color, -light)
+                    Color::interpolate(settings.background_color, settings.light_color, -light)
                 } else {
-                    Color::mix(settings.background_color, settings.dark_color, light)
+                    Color::interpolate(settings.background_color, settings.dark_color, light)
                 };
 
                 tanaka.set_pixel_at(x, y, c).unwrap();

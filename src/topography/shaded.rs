@@ -36,9 +36,9 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
 
             // Interpolate between colors
             let color = if shading < 0.0 {
-                Color::mix(settings.background_color, settings.light_color, -shading)
+                Color::interpolate(settings.background_color, settings.light_color, -shading)
             } else {
-                Color::mix(settings.background_color, settings.dark_color, shading)
+                Color::interpolate(settings.background_color, settings.dark_color, shading)
             };
 
             result.set_pixel_at(x, y, color).unwrap();

@@ -26,7 +26,7 @@ impl std::ops::IndexMut<usize> for Color {
 } 
 
 impl Color {
-    pub fn mix(a: Color, b: Color, factor: f64) -> Color {
+    pub fn interpolate(a: Color, b: Color, factor: f64) -> Color {
         let factor = factor.clamp(0.0, 1.0);
         let R = a[0] * (1.0 - factor) + b[0] * factor;
         let G = a[1] * (1.0 - factor) + b[1] * factor;
