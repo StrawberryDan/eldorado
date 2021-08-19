@@ -32,12 +32,15 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
     let mut tanaka = Image::new(heightmap.width(), heightmap.height());
 
     let contour_line_color = Color::from([1.0, 0.0, 0.0]);
-    let contours = super::generate_contour_layer(heightmap, super::ContourSettings {
-        line_divisions: settings.line_divisions,
-        line_color: contour_line_color,
-        cleaning_factor: settings.cleaning_factor,
-        ..Default::default()
-    });
+    let contours = super::generate_contour_layer(
+        heightmap,
+        super::ContourSettings {
+            line_divisions: settings.line_divisions,
+            line_color: contour_line_color,
+            cleaning_factor: settings.cleaning_factor,
+            ..Default::default()
+        },
+    );
 
     for x in 0..heightmap.width() {
         for y in 0..heightmap.height() {
@@ -58,7 +61,9 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
 
                 tanaka.set_pixel_at(x, y, c).unwrap();
             } else {
-                tanaka.set_pixel_at(x, y, settings.background_color).unwrap();
+                tanaka
+                    .set_pixel_at(x, y, settings.background_color)
+                    .unwrap();
             }
         }
     }
@@ -69,7 +74,7 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
 #[cfg(test)]
 mod test {
     use super::*;
-    
+
     #[test]
     fn tanaka() {
         let image = Image::from_file("image/earth.png").unwrap();
@@ -77,6 +82,8 @@ mod test {
 
         let contours = generate(&heightmap, Settings::default());
 
-        contours.write_to_file("image/tanaka_contours.out.png").unwrap();
+        contours
+            .write_to_file("image/tanaka_contours.out.png")
+            .unwrap();
     }
 }

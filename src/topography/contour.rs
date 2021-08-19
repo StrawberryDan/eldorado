@@ -25,23 +25,33 @@ impl Default for Settings {
 
 pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
     let mut contours = Image::new(heightmap.width(), heightmap.height());
-    // Create a heightmap with each point rounded down to multiples of division size. 
+    // Create a heightmap with each point rounded down to multiples of division size.
     let division_size = u16::MAX / settings.line_divisions;
     let mut leveled = heightmap.clone();
-    leveled.set_data( leveled.data().iter().map(|v| v / division_size).collect() ).unwrap();
-    // Work out if each cell is on a ridge in the leveled map and, if so, color it. 
+    leveled
+        .set_data(leveled.data().iter().map(|v| v / division_size).collect())
+        .unwrap();
+    // Work out if each cell is on a ridge in the leveled map and, if so, color it.
     for x in 0..heightmap.width() {
         for y in 0..heightmap.height() {
             let v = leveled.height_at(x, y).unwrap();
             let neighbours = leveled.orthoganal_neighbours(x, y);
             let lower_count = neighbours.iter().filter(|(_, nv)| v > *nv).count();
-            
-            contours.set_pixel_at(x, y,
-                if lower_count > 0 { settings.line_color } else { settings.background_color }
-            ).unwrap();
+
+            contours
+                .set_pixel_at(
+                    x,
+                    y,
+                    if lower_count > 0 {
+                        settings.line_color
+                    } else {
+                        settings.background_color
+                    },
+                )
+                .unwrap();
         }
     }
-    
+
     clean_contours(&mut contours, settings);
 
     return contours;
@@ -55,14 +65,30 @@ fn clean_contours(image: &mut Image, settings: Settings) {
             for y in 1..image.height() - 1 {
                 if image.pixel_at(x, y).unwrap() == settings.line_color {
                     let mut neighbours = 0;
-                    if image.pixel_at(x - 1, y - 1).unwrap() == settings.line_color { neighbours += 1; } 
-                    if image.pixel_at(x - 1, y + 0).unwrap() == settings.line_color { neighbours += 1; } 
-                    if image.pixel_at(x - 1, y + 1).unwrap() == settings.line_color { neighbours += 1; } 
-                    if image.pixel_at(x + 0, y - 1).unwrap() == settings.line_color { neighbours += 1; } 
-                    if image.pixel_at(x + 0, y + 1).unwrap() == settings.line_color { neighbours += 1; } 
-                    if image.pixel_at(x + 1, y - 1).unwrap() == settings.line_color { neighbours += 1; } 
-                    if image.pixel_at(x + 1, y + 0).unwrap() == settings.line_color { neighbours += 1; } 
-                    if image.pixel_at(x + 1, y + 1).unwrap() == settings.line_color { neighbours += 1; } 
+                    if image.pixel_at(x - 1, y - 1).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
+                    if image.pixel_at(x - 1, y + 0).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
+                    if image.pixel_at(x - 1, y + 1).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
+                    if image.pixel_at(x + 0, y - 1).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
+                    if image.pixel_at(x + 0, y + 1).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
+                    if image.pixel_at(x + 1, y - 1).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
+                    if image.pixel_at(x + 1, y + 0).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
+                    if image.pixel_at(x + 1, y + 1).unwrap() == settings.line_color {
+                        neighbours += 1;
+                    }
 
                     if neighbours < settings.cleaning_factor {
                         image.set_pixel_at(x, y, settings.background_color).unwrap();
@@ -72,7 +98,6 @@ fn clean_contours(image: &mut Image, settings: Settings) {
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {

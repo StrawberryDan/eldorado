@@ -23,7 +23,8 @@ impl Default for Settings {
 }
 
 pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
-    let mut result = Image::new(heightmap.width(), heightmap.height()).fill(settings.background_color);
+    let mut result =
+        Image::new(heightmap.width(), heightmap.height()).fill(settings.background_color);
 
     for x in 0..heightmap.width() {
         for y in 0..heightmap.height() {
@@ -52,11 +53,13 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
 mod test {
     use super::*;
 
-     #[test]
+    #[test]
     pub fn shaded() {
         let image = Image::from_file("image/earth.png").unwrap();
         let heightmap = HeightMap::from(image);
         let shaded = generate(&heightmap, Settings::default());
-        shaded.write_to_file("image/heightmap_shaded.out.png").unwrap();
+        shaded
+            .write_to_file("image/heightmap_shaded.out.png")
+            .unwrap();
     }
 }

@@ -1,5 +1,5 @@
 use super::*;
-use png::{Encoder, ColorType, BitDepth};
+use png::{BitDepth, ColorType, Encoder};
 
 pub fn write_file(image: &Image, file: impl AsRef<Path>) -> Result<(), String> {
     let mut encoder = {
@@ -25,9 +25,16 @@ pub fn write_file(image: &Image, file: impl AsRef<Path>) -> Result<(), String> {
         data.push(a.round() as u16);
     }
 
-    let as_bytes = unsafe { std::slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * std::mem::size_of::<u16>()) };
+    let as_bytes = unsafe {
+        std::slice::from_raw_parts(
+            data.as_ptr() as *const u8,
+            data.len() * std::mem::size_of::<u16>(),
+        )
+    };
 
-    header.write_image_data(&as_bytes[..]).map_err(|e| e.to_string())?;
+    header
+        .write_image_data(&as_bytes[..])
+        .map_err(|e| e.to_string())?;
 
     return Ok(());
 }

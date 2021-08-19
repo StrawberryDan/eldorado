@@ -1,5 +1,4 @@
-use std::{path::Path, fs::File, io::Read};
-use png::{Decoder, Encoder, ColorType, BitDepth};
+use std::{fs::File, io::Read, path::Path};
 
 pub use crate::color::*;
 
@@ -17,7 +16,8 @@ impl Image {
     /// Creates a new all black image
     pub fn new(width: usize, height: usize) -> Self {
         Self {
-            width, height,
+            width,
+            height,
             data: vec![Color::from([0u8, 0, 0, 0]); width * height],
         }
     }
@@ -33,13 +33,19 @@ impl Image {
     pub fn from_file(file: impl AsRef<Path>) -> Result<Self, String> {
         decode::load_png(file)
     }
-    
+
     /// Getter for image width
-    pub fn width(&self) -> usize { self.width }
+    pub fn width(&self) -> usize {
+        self.width
+    }
     /// Getter for image height
-    pub fn height(&self) -> usize { self.height }
+    pub fn height(&self) -> usize {
+        self.height
+    }
     /// Getter for the images raw pixel data
-    pub fn data(&self) -> &Vec<Color> { &self.data }
+    pub fn data(&self) -> &Vec<Color> {
+        &self.data
+    }
 
     /// Returns the pixel at a given coordinate. Returns None if out of bounds.
     pub fn pixel_at(&self, x: usize, y: usize) -> Option<Color> {
@@ -49,7 +55,17 @@ impl Image {
             None
         }
     }
-    
+
+    /// Returns the pixel at the given coordinate but uses signed integers for the coordinate.
+    /// Returns none if out of bounds.
+    pub fn signed_pixel_at(&self, x: isize, y: isize) -> Option<Color> {
+        if x >= 0 && y >= 0 {
+            self.pixel_at(x as usize, y as usize)
+        } else {
+            None
+        }
+    }
+
     /// Sets the pixel at a givent coordinate. Returns and error if out of bounds.
     pub fn set_pixel_at(&mut self, x: usize, y: usize, c: Color) -> Result<(), String> {
         if x < self.width && y < self.height {
@@ -64,6 +80,16 @@ impl Image {
     /// Currently only supports png files.
     pub fn write_to_file(&self, file: impl AsRef<Path>) -> Result<(), String> {
         encode::write_file(self, file)
+    }
+}
+
+impl Clone for Image {
+    fn clone(&self) -> Self {
+        Image {
+            width: self.width,
+            height: self.height,
+            data: self.data.clone(),
+        }
     }
 }
 
