@@ -2,6 +2,8 @@ use std::{fs::File, io::Read, path::Path};
 
 pub use crate::color::*;
 
+pub mod filter;
+
 mod decode;
 mod encode;
 
@@ -56,16 +58,6 @@ impl Image {
         }
     }
 
-    /// Returns the pixel at the given coordinate but uses signed integers for the coordinate.
-    /// Returns none if out of bounds.
-    pub fn signed_pixel_at(&self, x: isize, y: isize) -> Option<Color> {
-        if x >= 0 && y >= 0 {
-            self.pixel_at(x as usize, y as usize)
-        } else {
-            None
-        }
-    }
-
     /// Sets the pixel at a givent coordinate. Returns and error if out of bounds.
     pub fn set_pixel_at(&mut self, x: usize, y: usize, c: Color) -> Result<(), String> {
         if x < self.width && y < self.height {
@@ -80,6 +72,47 @@ impl Image {
     /// Currently only supports png files.
     pub fn write_to_file(&self, file: impl AsRef<Path>) -> Result<(), String> {
         encode::write_file(self, file)
+    }
+
+    pub fn kernel_filter_pixel(&self, x: usize, y: usize, kernel: &filter::Kernel) -> Color {
+        use crate::vector::Vector;
+        use std::convert::TryInto;
+
+        let mut color_acc = Vector::<4>::new();
+        let mut value_acc = 0.0;
+
+        for (offset, value) in kernel.pairs() {
+            let x = x as isize + offset.0;
+            let y = y as isize + offset.1;
+
+            let color = self.pixel_at(x as usize, y as usize);
+
+            match color {
+                Some(c) => {
+                    color_acc += c.as_vector() * value;
+                    value_acc += value;
+                },
+
+                None => continue,
+            }
+        }
+
+        return (color_acc * (1.0 / value_acc)).try_into().unwrap();
+    }
+
+    pub fn kernel_filter(&self, kernel: &filter::Kernel) -> Image {
+        let mut filtered = self.clone();
+
+        for x in 0..filtered.width() {
+            for y in 0..filtered.height() {
+                filtered.set_pixel_at(
+                    x, y,
+                    self.kernel_filter_pixel(x, y, kernel)
+                ).unwrap();
+            }
+        }
+
+        return filtered;
     }
 }
 
@@ -123,5 +156,16 @@ mod test {
 
         assert_eq!(a.width(), b.width());
         assert_eq!(a.height(), b.height());
+    }
+
+    #[test]
+    fn gaussian_blur() {
+        let a = Image::from_file("image/test.png").unwrap();
+
+        let kernel = filter::Kernel::gaussian(10.0);
+
+        let b = a.kernel_filter(&kernel);
+
+        b.write_to_file("image/blur.out.png").unwrap();
     }
 }

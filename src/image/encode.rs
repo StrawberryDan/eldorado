@@ -1,6 +1,17 @@
 use super::*;
 use png::{BitDepth, ColorType, Encoder};
 
+#[cfg(target_endian = "big")]
+fn to_network_endianness(bytes: Vec<u8>) -> Vec<u8> {
+    bytes
+}
+
+#[cfg(target_endian = "little")]
+fn to_network_endianness(mut bytes: Vec<u8>) -> Vec<u8> {
+    bytes.reverse();
+    return bytes;
+}
+
 pub fn write_file(image: &Image, file: impl AsRef<Path>) -> Result<(), String> {
     let mut encoder = {
         let file = File::create(file).map_err(|e| e.to_string())?;
@@ -12,23 +23,26 @@ pub fn write_file(image: &Image, file: impl AsRef<Path>) -> Result<(), String> {
 
     let mut header = encoder.write_header().map_err(|e| e.to_string())?;
 
-    let mut data = Vec::with_capacity(image.data.len() * 3);
-    for c in &image.data {
-        let r = c[0] * u16::MAX as f64;
-        let g = c[1] * u16::MAX as f64;
-        let b = c[2] * u16::MAX as f64;
-        let a = c[3] * u16::MAX as f64;
-
-        data.push(r.round() as u16);
-        data.push(g.round() as u16);
-        data.push(b.round() as u16);
-        data.push(a.round() as u16);
+    let mut data = Vec::with_capacity(image.data.len() * 4);
+    for y in 0..image.height() {
+        for x in 0..image.width() {
+            let c = image.pixel_at(x, y).unwrap();
+            let values = c.as_u16();
+            for v in values {
+                let bytes = unsafe { std::mem::transmute::<u16, [u8;2]>(v) };
+                let bytes = Vec::from(&bytes[..]);
+                let bytes = to_network_endianness(bytes);
+                for b in bytes {
+                    data.push(b);
+                }
+            }
+        }
     }
 
     let as_bytes = unsafe {
         std::slice::from_raw_parts(
             data.as_ptr() as *const u8,
-            data.len() * std::mem::size_of::<u16>(),
+            data.len() * std::mem::size_of::<u8>(),
         )
     };
 

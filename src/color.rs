@@ -32,6 +32,34 @@ impl Color {
     pub fn as_vector(&self) -> Vector<4> {
         Vector::from(self.0)
     }
+
+    pub fn as_u8(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        for i in 0..4 {
+            let value = (self[i] * u8::MAX as f64).round() as u8;
+            bytes.push(value);
+        }
+        return bytes;
+    }
+
+    pub fn as_u16(&self) -> Vec<u16> {
+        let mut bytes = Vec::new();
+        for i in 0..4 {
+            let value = (self[i] * u16::MAX as f64).round() as u16;
+            bytes.push(value);
+        }
+        return bytes;
+    }
+}
+
+impl From<[u8; 3]> for Color {
+    fn from(v: [u8; 3]) -> Self {
+        let v = v
+            .into_iter()
+            .map(|v| *v as f64 / u8::MAX as f64)
+            .collect::<Vec<_>>();
+        Color([v[0], v[1], v[2], 1.0])
+    }
 }
 
 impl std::str::FromStr for Color {
@@ -72,16 +100,7 @@ impl std::str::FromStr for Color {
             return Err(String::from("Invalid hex string length for color"));
         }
     }
-}
 
-impl From<[u8; 3]> for Color {
-    fn from(v: [u8; 3]) -> Self {
-        let v = v
-            .into_iter()
-            .map(|v| *v as f64 / u8::MAX as f64)
-            .collect::<Vec<_>>();
-        Color([v[0], v[1], v[2], 1.0])
-    }
 }
 
 impl From<[u8; 4]> for Color {
