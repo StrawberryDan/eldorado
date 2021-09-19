@@ -1,4 +1,5 @@
 use super::*;
+use std::ffi::OsStr;
 
 /// Struct representing a grayscale heightmap
 #[derive(Clone)]
@@ -18,6 +19,47 @@ impl HeightMap {
         }
     }
 
+    pub fn from_file(path: impl AsRef<OsStr>) -> Result<Self, String> {
+        use png::Decoder;
+        use std::io::Read;
+
+        let decoder = std::fs::File::open(path.as_ref()).map_err(|e| e.to_string())?;
+        let decoder = Decoder::new(decoder);
+
+        let (info, mut reader) = decoder.read_info().map_err(|e| e.to_string())?;
+        let mut pixel_data = vec![0u8; reader.output_buffer_size()];
+        reader.next_frame(&mut pixel_data[..]);
+        let mut reader = std::io::Cursor::new(pixel_data);
+
+        let width = info.width as usize;
+        let height = info.height as usize;
+        let mut data = Vec::with_capacity(width * height);
+
+        while data.len() < width * height {
+            if let png::ColorType::Grayscale = info.color_type {
+                match info.bit_depth {
+                    png::BitDepth::Eight => {
+                        let mut bytes = [0u8; 1];
+                        reader.read(&mut bytes);
+                        data.push((bytes[0] as u16) << 8);
+                    }
+
+                    png::BitDepth::Sixteen => {
+                        let mut bytes = [0u8; 2];
+                        reader.read(&mut bytes);
+                        bytes.reverse();
+                        let value = unsafe { std::mem::transmute::<[u8; 2], u16>(bytes) };
+                        data.push(value);
+                    }
+
+                    _ => { return Err(String::from("Invalid Bit depth for height map")); }
+                }
+            }
+        }
+
+        Ok(HeightMap { width, height, data })
+    }
+
     /// Getter for heightmaps width.
     pub fn width(&self) -> usize {
         self.width
@@ -34,7 +76,7 @@ impl HeightMap {
     /// Sets the data to a difference vector of height values.
     /// Returns Err if the vector is the incorrect length.
     pub fn set_data(&mut self, data: Vec<u16>) -> Result<(), ()> {
-        if data.len() == self.width * self.height {
+        if data.len() == self.data.len() {
             self.data = data;
             Ok(())
         } else {
@@ -83,9 +125,13 @@ impl HeightMap {
                 continue;
             }
 
+            let height = self.height_at(x as usize, y as usize);
+
+            if height.is_none() { continue; }
+
             neighbours.push((
                 [x as usize, y as usize],
-                self.height_at(x as usize, y as usize).unwrap(),
+                height.unwrap()
             ));
         }
 
@@ -145,20 +191,6 @@ impl HeightMap {
             let dy = (b - t) / 2.0;
 
             Some(Vector::from([-dx, -dy]).normalise())
-        }
-    }
-}
-
-impl From<Image> for HeightMap {
-    fn from(image: Image) -> Self {
-        Self {
-            width: image.width(),
-            height: image.height(),
-            data: image
-                .data()
-                .iter()
-                .map(|c| (c[0] * u16::MAX as f64).round() as u16)
-                .collect(),
-        }
+        };
     }
 }

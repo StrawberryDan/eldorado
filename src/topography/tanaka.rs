@@ -19,9 +19,9 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             line_divisions: 32,
-            light_color: Color::from([1.0, 1.0, 1.0]),
-            dark_color: Color::from([0.0, 0.0, 0.0]),
-            background_color: Color::from([0.0, 0.0, 0.0, 0.0]),
+            light_color: Color::from([255, 255, 255]),
+            dark_color: Color::from([0, 0, 0]),
+            background_color: Color::from([0, 0, 0, 0]),
             light_dir: Vector::from([1.0, 1.0]),
             cleaning_factor: 2,
         }
@@ -31,7 +31,7 @@ impl Default for Settings {
 pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
     let mut tanaka = Image::new(heightmap.width(), heightmap.height());
 
-    let contour_line_color = Color::from([1.0, 0.0, 0.0]);
+    let contour_line_color = Color::from([255, 0, 0]);
     let contours = super::generate_contour_layer(
         heightmap,
         super::ContourSettings {
@@ -78,8 +78,7 @@ mod test {
     #[test]
     #[ignore]
     fn tanaka() {
-        let image = Image::from_file("image/earth.png").unwrap();
-        let heightmap = HeightMap::from(image);
+        let heightmap = HeightMap::from_file("image/earth.png").unwrap();
 
         let contours = generate(&heightmap, Settings::default());
 

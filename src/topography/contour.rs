@@ -15,8 +15,8 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            line_color: Color::from([1.0, 0.0, 0.0]),
-            background_color: Color::from([0.0, 0.0, 0.0, 0.0]),
+            line_color: Color::from([255, 0, 0]),
+            background_color: Color::from([0, 0, 0, 0]),
             line_divisions: 32,
             cleaning_factor: 2,
         }
@@ -106,8 +106,7 @@ mod test {
     #[test]
     #[ignore]
     fn contours() {
-        let image = Image::from_file("image/earth.png").unwrap();
-        let heightmap = HeightMap::from(image);
+        let heightmap = HeightMap::from_file("image/earth.png").unwrap();
         let contours = generate(&heightmap, Settings::default());
         contours.write_to_file("image/contours.out.png").unwrap();
     }

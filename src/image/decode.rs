@@ -104,6 +104,7 @@ pub fn load_png(file: impl AsRef<Path>) -> Result<Image, String> {
                 let mut byte = [0u8; 2];
                 data.read(&mut byte[..]).unwrap();
                 let val = u16::from_le_bytes(byte);
+                let val = (val >> 8) as u8;
                 pixels.push(Color::from([val, val, val]));
             }
 
@@ -119,8 +120,8 @@ pub fn load_png(file: impl AsRef<Path>) -> Result<Image, String> {
                 let mut byte = [0u8; 4];
                 data.read(&mut byte[..]).unwrap();
                 let byte = unsafe { std::mem::transmute::<_, [u16; 2]>(byte) };
-                let g = byte[0];
-                let a = byte[1];
+                let g = (byte[0] >> 8) as u8;
+                let a = (byte[1] >> 8) as u8;
                 pixels.push(Color::from([g, g, g, a]));
             }
 
@@ -137,9 +138,9 @@ pub fn load_png(file: impl AsRef<Path>) -> Result<Image, String> {
                 let mut byte = [0u8; 6];
                 data.read(&mut byte[..]).unwrap();
                 let byte = unsafe { std::mem::transmute::<_, [u16; 3]>(byte) };
-                let r = byte[0];
-                let g = byte[1];
-                let b = byte[2];
+                let r = (byte[0] >> 8) as u8;
+                let g = (byte[1] >> 8) as u8;
+                let b = (byte[2] >> 8) as u8;
                 pixels.push(Color::from([r, g, b]));
             }
 
@@ -157,10 +158,10 @@ pub fn load_png(file: impl AsRef<Path>) -> Result<Image, String> {
                 let mut byte = [0u8; 8];
                 data.read(&mut byte[..]).unwrap();
                 let byte = unsafe { std::mem::transmute::<_, [u16; 4]>(byte) };
-                let r = byte[0];
-                let g = byte[1];
-                let b = byte[2];
-                let a = byte[3];
+                let r = (byte[0] >> 8) as u8;
+                let g = (byte[1] >> 8) as u8;
+                let b = (byte[2] >> 8) as u8;
+                let a = (byte[3] >> 8) as u8;
                 pixels.push(Color::from([r, g, b, a]));
             }
 

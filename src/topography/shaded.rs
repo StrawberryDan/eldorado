@@ -15,9 +15,9 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             light_dir: Vector::from([1.0, 1.0]).normalise(),
-            background_color: Color::from([0.0, 0.0, 0.0, 0.0]),
-            light_color: Color::from([1.0, 1.0, 1.0, 1.0]),
-            dark_color: Color::from([0.0, 0.0, 0.0, 1.0]),
+            background_color: Color::from([0, 0, 0, 0]),
+            light_color: Color::from([255, 255, 255, 255]),
+            dark_color: Color::from([0, 0, 0, 255]),
         }
     }
 }
@@ -56,8 +56,7 @@ mod test {
     #[test]
     #[ignore]
     pub fn shaded() {
-        let image = Image::from_file("image/earth.png").unwrap();
-        let heightmap = HeightMap::from(image);
+        let heightmap = HeightMap::from_file("image/earth.png").unwrap();
         let shaded = generate(&heightmap, Settings::default());
         shaded
             .write_to_file("image/heightmap_shaded.out.png")

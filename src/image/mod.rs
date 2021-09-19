@@ -75,10 +75,9 @@ impl Image {
     }
 
     pub fn kernel_filter_pixel(&self, x: usize, y: usize, kernel: &filter::Kernel) -> Color {
-        use crate::vector::Vector;
         use std::convert::TryInto;
 
-        let mut color_acc = Vector::<4>::new();
+        let mut color_acc = [0u64; 4];
         let mut value_acc = 0.0;
 
         for (offset, value) in kernel.pairs() {
@@ -89,7 +88,10 @@ impl Image {
 
             match color {
                 Some(c) => {
-                    color_acc += c.as_vector() * value;
+                    for i in 0..4 {
+                        color_acc[i] += c[i] as u64;
+                    }
+
                     value_acc += value;
                 },
 
@@ -97,7 +99,8 @@ impl Image {
             }
         }
 
-        return (color_acc * (1.0 / value_acc)).try_into().unwrap();
+        let color_acc: [u8; 4] = color_acc.map(|v| (v as f64 / value_acc).round() as u8).try_into().unwrap();
+        return color_acc.into();
     }
 
     pub fn kernel_filter(&self, kernel: &filter::Kernel) -> Image {

@@ -1,13 +1,11 @@
-use crate::vector::Vector;
 use std::fmt::Formatter;
-use std::convert::TryFrom;
 
-/// Color is represented using RGB8.
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Color([f64; 4]);
+/// Color is represented using normalised floating points.
+#[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
+pub struct Color([u8; 4]);
 
 impl std::ops::Index<usize> for Color {
-    type Output = f64;
+    type Output = u8;
     fn index(&self, index: usize) -> &Self::Output {
         &self.0[index]
     }
@@ -22,43 +20,17 @@ impl std::ops::IndexMut<usize> for Color {
 impl Color {
     pub fn interpolate(x: Color, y: Color, factor: f64) -> Color {
         let factor = factor.clamp(0.0, 1.0);
-        let r = x[0] * (1.0 - factor) + y[0] * factor;
-        let g = x[1] * (1.0 - factor) + y[1] * factor;
-        let b = x[2] * (1.0 - factor) + y[2] * factor;
-        let a = x[3] * (1.0 - factor) + y[3] * factor;
-        Color([r, g, b, a])
-    }
-
-    pub fn as_vector(&self) -> Vector<4> {
-        Vector::from(self.0)
-    }
-
-    pub fn as_u8(&self) -> Vec<u8> {
-        let mut bytes = Vec::new();
-        for i in 0..4 {
-            let value = (self[i] * u8::MAX as f64).round() as u8;
-            bytes.push(value);
-        }
-        return bytes;
-    }
-
-    pub fn as_u16(&self) -> Vec<u16> {
-        let mut bytes = Vec::new();
-        for i in 0..4 {
-            let value = (self[i] * u16::MAX as f64).round() as u16;
-            bytes.push(value);
-        }
-        return bytes;
+        let r = x[0] as f64  * (1.0 - factor) + y[0] as f64 * factor;
+        let g = x[1] as f64  * (1.0 - factor) + y[1] as f64  * factor;
+        let b = x[2]  as f64 * (1.0 - factor) + y[2] as f64  * factor;
+        let a = x[3] as f64  * (1.0 - factor) + y[3] as f64  * factor;
+        Color([r.round() as u8, g.round() as u8, b.round() as u8, a.round() as u8])
     }
 }
 
 impl From<[u8; 3]> for Color {
     fn from(v: [u8; 3]) -> Self {
-        let v = v
-            .iter()
-            .map(|v| *v as f64 / u8::MAX as f64)
-            .collect::<Vec<_>>();
-        Color([v[0], v[1], v[2], 1.0])
+        Color([v[0], v[1], v[2], 255])
     }
 }
 
@@ -78,22 +50,13 @@ impl std::str::FromStr for Color {
             let g = (((0b1111_1111 << 8) & as_number) >> 8) as u8;
             let b = (((0b1111_1111 << 0) & as_number) >> 0) as u8;
 
-            let r = r as f64 / u8::MAX as f64;
-            let g = g as f64 / u8::MAX as f64;
-            let b = b as f64 / u8::MAX as f64;
-
-            Ok(Color([r, g, b, 1.0]))
+            Ok(Color([r, g, b, 255]))
         } else if transformed.len() == 8 {
             let as_number = u32::from_str_radix(transformed, 16).map_err(|e| e.to_string())?;
             let r = (((0b1111_1111 << 24) & as_number) >> 24) as u8;
             let g = (((0b1111_1111 << 16) & as_number) >> 16) as u8;
             let b = (((0b1111_1111 << 8) & as_number) >> 8) as u8;
             let a = (((0b1111_1111 << 0) & as_number) >> 0) as u8;
-
-            let r = r as f64 / u8::MAX as f64;
-            let g = g as f64 / u8::MAX as f64;
-            let b = b as f64 / u8::MAX as f64;
-            let a = a as f64 / u8::MAX as f64;
 
             Ok(Color([r, g, b, a]))
         } else {
@@ -105,65 +68,7 @@ impl std::str::FromStr for Color {
 
 impl From<[u8; 4]> for Color {
     fn from(v: [u8; 4]) -> Self {
-        let v = v
-            .iter()
-            .map(|v| *v as f64 / u8::MAX as f64)
-            .collect::<Vec<_>>();
         Color([v[0], v[1], v[2], v[3]])
-    }
-}
-
-impl From<[u16; 3]> for Color {
-    fn from(v: [u16; 3]) -> Self {
-        let v = v
-            .iter()
-            .map(|v| *v as f64 / u16::MAX as f64)
-            .collect::<Vec<_>>();
-        Color([v[0], v[1], v[2], 1.0])
-    }
-}
-
-impl From<[u16; 4]> for Color {
-    fn from(v: [u16; 4]) -> Self {
-        let v = v
-            .iter()
-            .map(|v| *v as f64 / u16::MAX as f64)
-            .collect::<Vec<_>>();
-        Color([v[0], v[1], v[2], v[3]])
-    }
-}
-
-impl From<[f64; 3]> for Color {
-    fn from(v: [f64; 3]) -> Self {
-        Color([v[0], v[1], v[2], 1.0])
-    }
-}
-
-impl From<[f64; 4]> for Color {
-    fn from(v: [f64; 4]) -> Self {
-        Color(v)
-    }
-}
-
-impl TryFrom<Vector<3>> for Color {
-    type Error = String;
-    fn try_from(v: Vector<3>) -> Result<Self, Self::Error> {
-        for i in 0..2 {
-            if v[i] < 0.0 || v[i] > 1.0 { return Err(String::from("Color value out of bounds")); }
-        }
-
-        Ok(Color{ 0: [v[0], v[1], v[2], 1.0] })
-    }
-}
-
-impl TryFrom<Vector<4>> for Color {
-    type Error = String;
-    fn try_from(v: Vector<4>) -> Result<Self, Self::Error> {
-        for i in 0..3 {
-            if v[i] < 0.0 || v[i] > 1.0 { return Err(String::from("Color value out of bounds")); }
-        }
-
-        Ok(Color{ 0: [v[0], v[1], v[2], v[3]] })
     }
 }
 
