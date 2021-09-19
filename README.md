@@ -1,5 +1,7 @@
 #El Dorado - A Map Maker for the Unartistic
 
+Software for making professional looking maps without the hassle of drawing it yourself. Takes in an assortment of input data to create a clean readable map. Excellent for things like table to scenarios.
+
 ## Features
 
 ### Biome Colouring
