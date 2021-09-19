@@ -144,28 +144,11 @@ mod test {
     }
 
     #[test]
-    fn read_image_from_file() {
-        let _img = Image::from_file("image/test.png").unwrap();
-    }
-
-    #[test]
-    fn write_image_to_file() {
-        let a = Image::from_file("image/test.png").unwrap();
-        a.write_to_file("image/test.out.png").unwrap();
-        let b = Image::from_file("image/test.out.png").unwrap();
-
-        assert_eq!(a.width(), b.width());
-        assert_eq!(a.height(), b.height());
-    }
-
-    #[test]
+    #[ignore]
     fn gaussian_blur() {
-        let a = Image::from_file("image/test.png").unwrap();
-
+        let a = Image::from_file("image/earth.png").unwrap();
         let kernel = filter::Kernel::gaussian(10.0);
-
         let b = a.kernel_filter(&kernel);
-
         b.write_to_file("image/blur.out.png").unwrap();
     }
 }

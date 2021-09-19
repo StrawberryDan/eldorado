@@ -132,7 +132,7 @@ impl HeightMap {
 
     /// Returns the direction a given cell faces (North facing, South facing .etc)
     /// Returns None if coordinate is out of range
-    pub fn normal_at(&self, x: usize, y: usize) -> Option<Vector<2>> {
+    pub fn surface_normal(&self, x: usize, y: usize) -> Option<Vector<2>> {
         if x <= 0 || x >= self.width() - 1 || y <= 0 || y >= self.height() - 1 {
             return None;
         } else {
@@ -144,7 +144,7 @@ impl HeightMap {
             let dx = (r - l) / 2.0;
             let dy = (b - t) / 2.0;
 
-            return Some(Vector::from([-dx, -dy]));
+            return Some(Vector::from([-dx, -dy]).normalise());
         }
     }
 }

@@ -104,6 +104,7 @@ mod test {
     use super::*;
 
     #[test]
+    #[ignore]
     fn contours() {
         let image = Image::from_file("image/earth.png").unwrap();
         let heightmap = HeightMap::from(image);

@@ -46,9 +46,9 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
         for y in 0..heightmap.height() {
             if contours.pixel_at(x, y).unwrap() == contour_line_color {
                 // Work out light value
-                let normal = heightmap.normal_at(x, y);
+                let normal = heightmap.surface_normal(x, y);
                 let light = match normal {
-                    Some(normal) => Vector::dot(settings.light_dir.normalise(), normal),
+                    Some(normal) => Vector::dot(settings.light_dir, normal),
                     None => continue,
                 };
 
@@ -76,6 +76,7 @@ mod test {
     use super::*;
 
     #[test]
+    #[ignore]
     fn tanaka() {
         let image = Image::from_file("image/earth.png").unwrap();
         let heightmap = HeightMap::from(image);
