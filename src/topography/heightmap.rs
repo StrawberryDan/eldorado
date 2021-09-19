@@ -19,6 +19,7 @@ impl HeightMap {
         }
     }
 
+    /// Loads a heightmap from a 8/16 bit grayscale image.
     pub fn from_file(path: impl AsRef<OsStr>) -> Result<Self, String> {
         use png::Decoder;
         use std::io::Read;
