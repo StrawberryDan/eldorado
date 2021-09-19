@@ -20,13 +20,13 @@ impl std::ops::IndexMut<usize> for Color {
 }
 
 impl Color {
-    pub fn interpolate(a: Color, b: Color, factor: f64) -> Color {
+    pub fn interpolate(x: Color, y: Color, factor: f64) -> Color {
         let factor = factor.clamp(0.0, 1.0);
-        let R = a[0] * (1.0 - factor) + b[0] * factor;
-        let G = a[1] * (1.0 - factor) + b[1] * factor;
-        let B = a[2] * (1.0 - factor) + b[2] * factor;
-        let A = a[3] * (1.0 - factor) + b[3] * factor;
-        Color([R, G, B, A])
+        let r = x[0] * (1.0 - factor) + y[0] * factor;
+        let g = x[1] * (1.0 - factor) + y[1] * factor;
+        let b = x[2] * (1.0 - factor) + y[2] * factor;
+        let a = x[3] * (1.0 - factor) + y[3] * factor;
+        Color([r, g, b, a])
     }
 
     pub fn as_vector(&self) -> Vector<4> {
@@ -55,7 +55,7 @@ impl Color {
 impl From<[u8; 3]> for Color {
     fn from(v: [u8; 3]) -> Self {
         let v = v
-            .into_iter()
+            .iter()
             .map(|v| *v as f64 / u8::MAX as f64)
             .collect::<Vec<_>>();
         Color([v[0], v[1], v[2], 1.0])
@@ -72,7 +72,7 @@ impl std::str::FromStr for Color {
         if transformed.starts_with("#") {
             transformed = transformed.strip_prefix("#").unwrap()
         }
-        if transformed.len() == 6 {
+        return if transformed.len() == 6 {
             let as_number = u32::from_str_radix(transformed, 16).map_err(|e| e.to_string())?;
             let r = (((0b1111_1111 << 16) & as_number) >> 16) as u8;
             let g = (((0b1111_1111 << 8) & as_number) >> 8) as u8;
@@ -82,7 +82,7 @@ impl std::str::FromStr for Color {
             let g = g as f64 / u8::MAX as f64;
             let b = b as f64 / u8::MAX as f64;
 
-            return Ok(Color([r, g, b, 1.0]));
+            Ok(Color([r, g, b, 1.0]))
         } else if transformed.len() == 8 {
             let as_number = u32::from_str_radix(transformed, 16).map_err(|e| e.to_string())?;
             let r = (((0b1111_1111 << 24) & as_number) >> 24) as u8;
@@ -95,9 +95,9 @@ impl std::str::FromStr for Color {
             let b = b as f64 / u8::MAX as f64;
             let a = a as f64 / u8::MAX as f64;
 
-            return Ok(Color([r, g, b, a]));
+            Ok(Color([r, g, b, a]))
         } else {
-            return Err(String::from("Invalid hex string length for color"));
+            Err(String::from("Invalid hex string length for color"))
         }
     }
 
@@ -106,7 +106,7 @@ impl std::str::FromStr for Color {
 impl From<[u8; 4]> for Color {
     fn from(v: [u8; 4]) -> Self {
         let v = v
-            .into_iter()
+            .iter()
             .map(|v| *v as f64 / u8::MAX as f64)
             .collect::<Vec<_>>();
         Color([v[0], v[1], v[2], v[3]])
@@ -116,7 +116,7 @@ impl From<[u8; 4]> for Color {
 impl From<[u16; 3]> for Color {
     fn from(v: [u16; 3]) -> Self {
         let v = v
-            .into_iter()
+            .iter()
             .map(|v| *v as f64 / u16::MAX as f64)
             .collect::<Vec<_>>();
         Color([v[0], v[1], v[2], 1.0])
@@ -126,7 +126,7 @@ impl From<[u16; 3]> for Color {
 impl From<[u16; 4]> for Color {
     fn from(v: [u16; 4]) -> Self {
         let v = v
-            .into_iter()
+            .iter()
             .map(|v| *v as f64 / u16::MAX as f64)
             .collect::<Vec<_>>();
         Color([v[0], v[1], v[2], v[3]])

@@ -118,7 +118,7 @@ pub fn load_png(file: impl AsRef<Path>) -> Result<Image, String> {
             (ColorType::GrayscaleAlpha, 16) => {
                 let mut byte = [0u8; 4];
                 data.read(&mut byte[..]).unwrap();
-                let mut byte = unsafe { std::mem::transmute::<_, [u16; 2]>(byte) };
+                let byte = unsafe { std::mem::transmute::<_, [u16; 2]>(byte) };
                 let g = byte[0];
                 let a = byte[1];
                 pixels.push(Color::from([g, g, g, a]));
@@ -136,7 +136,7 @@ pub fn load_png(file: impl AsRef<Path>) -> Result<Image, String> {
             (ColorType::RGB, 16) => {
                 let mut byte = [0u8; 6];
                 data.read(&mut byte[..]).unwrap();
-                let mut byte = unsafe { std::mem::transmute::<_, [u16; 3]>(byte) };
+                let byte = unsafe { std::mem::transmute::<_, [u16; 3]>(byte) };
                 let r = byte[0];
                 let g = byte[1];
                 let b = byte[2];
@@ -156,7 +156,7 @@ pub fn load_png(file: impl AsRef<Path>) -> Result<Image, String> {
             (ColorType::RGBA, 16) => {
                 let mut byte = [0u8; 8];
                 data.read(&mut byte[..]).unwrap();
-                let mut byte = unsafe { std::mem::transmute::<_, [u16; 4]>(byte) };
+                let byte = unsafe { std::mem::transmute::<_, [u16; 4]>(byte) };
                 let r = byte[0];
                 let g = byte[1];
                 let b = byte[2];

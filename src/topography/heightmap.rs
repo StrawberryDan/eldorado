@@ -9,7 +9,7 @@ pub struct HeightMap {
 }
 
 impl HeightMap {
-    /// Create a new all zeros heighmap.
+    /// Create a new all zeros heightmap.
     pub fn new(width: usize, height: usize) -> Self {
         HeightMap {
             width,
@@ -63,9 +63,9 @@ impl HeightMap {
         }
     }
 
-    /// Returns the orthoganally adjacent cells of the given coordinate.
+    /// Returns the orthogonally adjacent cells of the given coordinate.
     /// Returns as a list of pairs of coordinates and values.
-    pub fn orthoganal_neighbours(&self, x: usize, y: usize) -> Vec<([usize; 2], u16)> {
+    pub fn orthogonal_neighbours(&self, x: usize, y: usize) -> Vec<([usize; 2], u16)> {
         let mut neighbours = Vec::new();
 
         for o in [[-1, 0], [1, 0], [0, -1], [0, 1]] {
@@ -93,7 +93,7 @@ impl HeightMap {
     }
 
     /// Returns the diagonal neighbours of a given cell.
-    /// See orthoganal_neighbours.
+    /// See orthogonal_neighbours.
     pub fn diagonal_neighbours(&self, x: usize, y: usize) -> Vec<([usize; 2], u16)> {
         let mut neighbours = Vec::new();
 
@@ -121,10 +121,10 @@ impl HeightMap {
         return neighbours;
     }
 
-    /// Returns the union of diagonal_neighbours and orthoganal_neighbours.
+    /// Returns the union of diagonal_neighbours and orthogonal_neighbours.
     pub fn neighbours(&self, x: usize, y: usize) -> Vec<([usize; 2], u16)> {
         return self
-            .orthoganal_neighbours(x, y)
+            .orthogonal_neighbours(x, y)
             .into_iter()
             .chain(self.diagonal_neighbours(x, y).into_iter())
             .collect();
@@ -133,8 +133,8 @@ impl HeightMap {
     /// Returns the direction a given cell faces (North facing, South facing .etc)
     /// Returns None if coordinate is out of range
     pub fn surface_normal(&self, x: usize, y: usize) -> Option<Vector<2>> {
-        if x <= 0 || x >= self.width() - 1 || y <= 0 || y >= self.height() - 1 {
-            return None;
+        return if x <= 0 || x >= self.width() - 1 || y <= 0 || y >= self.height() - 1 {
+            None
         } else {
             let l = self.height_at(x - 1, y)? as f64;
             let r = self.height_at(x + 1, y)? as f64;
@@ -144,7 +144,7 @@ impl HeightMap {
             let dx = (r - l) / 2.0;
             let dy = (b - t) / 2.0;
 
-            return Some(Vector::from([-dx, -dy]).normalise());
+            Some(Vector::from([-dx, -dy]).normalise())
         }
     }
 }

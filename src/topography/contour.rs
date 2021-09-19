@@ -35,7 +35,7 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
     for x in 0..heightmap.width() {
         for y in 0..heightmap.height() {
             let v = leveled.height_at(x, y).unwrap();
-            let neighbours = leveled.orthoganal_neighbours(x, y);
+            let neighbours = leveled.orthogonal_neighbours(x, y);
             let lower_count = neighbours.iter().filter(|(_, nv)| v > *nv).count();
 
             contours
