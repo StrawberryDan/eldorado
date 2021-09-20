@@ -157,6 +157,7 @@ impl Image {
                 let bottom_color = self.pixel_at(x, y).unwrap();
 
                 let factor = top_color[3] as f64 / u8::MAX as f64;
+
                 let mixed = Color::interpolate(bottom_color, top_color, factor);
 
                 self.set_pixel_at(x, y, mixed).unwrap();

@@ -1,10 +1,41 @@
 # El Dorado - A Mapmaker for the Unartistic
 
-Software for making professional looking maps without the hassle of drawing it yourself. Takes in an assortment of input data to create a clean readable map. Excellent for things like table to scenarios.
+Software for making professional looking maps without the hassle of drawing it yourself. Takes in an assortment of input
+data to create a clean readable map. Excellent for things like table to scenarios.
 
 ## Features
 
 ### Biome Colouring
+
+Using the following biome bitmap of earth and the following json configuration file:
+
+![Biome Map of Earth](samples/biomes.png)
+
+```json
+{
+  "#40ffff": {},
+  "#00c000": {
+    "outline_thickness": 2
+  },
+  "#004040": {
+    "color": "00404080"
+  },
+  "#404000": {},
+  "#ffff40": {
+    "color": "#ff8000"
+  },
+  "#004000": {
+    "outline_thickness": 2,
+    "outline_color": "#ff00e7"
+  },
+  "#808000": {},
+  "#c0c0c0": {}
+}
+```
+
+images such as this can be quickly produced. As you can see the shading of the biomes can be changed (including transparency) and the biomes may be outlined with different colors.
+
+![Processed Biome Map of Earth](samples/biome_map.png)
 
 ### Glyphs
 
@@ -12,7 +43,8 @@ Software for making professional looking maps without the hassle of drawing it y
 
 ### Topographical Mapping
 
-Topographical images can be generated from monochrome heightmaps. The following heightmap of the earth will demonstrate the different mapping techniques available for describing topographical data.
+Topographical images can be generated from monochrome heightmaps. The following heightmap of the earth will demonstrate
+the different mapping techniques available for describing topographical data.
 
 ![Heightmap of the earth](image/earth.png)
 
@@ -24,7 +56,8 @@ The following shows the given height map divided into 32 different evenly space 
 
 #### Tanaka Contour Lines
 
-Tanaka Contours are the same as normal ones except that they are shaded differently based on an imaginary light source. This gives an illusion of depth.
+Tanaka Contours are the same as normal ones except that they are shaded differently based on an imaginary light source.
+This gives an illusion of depth.
 
 ![Heightmap of the earth given tanaka contour lines](samples/tanaka_contours.png)
 

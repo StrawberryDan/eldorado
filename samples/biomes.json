@@ -1,21 +1,26 @@
 {
+  "#40ffff": {},
 
-    "ff8080": {
-        "color": "880088",
-        "outline_color": "000000",
-        "outline_thickness": 0
-    },
+  "#00c000": {
+    "outline_thickness": 2
+  },
 
-    "008000": {
-        "color": "888800",
-        "outline_color": "0000FF",
-        "outline_thickness": 6
-    },
+  "#004040": {
+    "color": "00404080"
+  },
 
-    "008080": {
-        "color": "008888",
-        "outline_color": "FF0000",
-        "outline_thickness": 1
-    }
+  "#404000": {},
 
+  "#ffff40": {
+    "color": "#ff8000"
+  },
+
+  "#004000": {
+    "outline_thickness": 2,
+    "outline_color": "#ff00e7"
+  },
+
+  "#808000": {},
+
+  "#c0c0c0": {}
 }
