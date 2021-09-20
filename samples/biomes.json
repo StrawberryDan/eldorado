@@ -1,7 +1,21 @@
 {
 
-    "32a852": {
+    "ff8080": {
+        "color": "880088",
+        "outline_color": "000000",
+        "outline_thickness": 0
+    },
 
+    "008000": {
+        "color": "888800",
+        "outline_color": "0000FF",
+        "outline_thickness": 6
+    },
+
+    "008080": {
+        "color": "008888",
+        "outline_color": "FF0000",
+        "outline_thickness": 1
     }
 
 }

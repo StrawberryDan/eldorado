@@ -29,7 +29,7 @@ impl HeightMap {
 
         let (info, mut reader) = decoder.read_info().map_err(|e| e.to_string())?;
         let mut pixel_data = vec![0u8; reader.output_buffer_size()];
-        reader.next_frame(&mut pixel_data[..]);
+        reader.next_frame(&mut pixel_data[..]).map_err(|e| e.to_string())?;
         let mut reader = std::io::Cursor::new(pixel_data);
 
         let width = info.width as usize;
@@ -41,13 +41,13 @@ impl HeightMap {
                 match info.bit_depth {
                     png::BitDepth::Eight => {
                         let mut bytes = [0u8; 1];
-                        reader.read(&mut bytes);
+                        reader.read(&mut bytes).map_err(|e| e.to_string())?;
                         data.push((bytes[0] as u16) << 8);
                     }
 
                     png::BitDepth::Sixteen => {
                         let mut bytes = [0u8; 2];
-                        reader.read(&mut bytes);
+                        reader.read(&mut bytes).map_err(|e| e.to_string())?;
                         bytes.reverse();
                         let value = unsafe { std::mem::transmute::<[u8; 2], u16>(bytes) };
                         data.push(value);

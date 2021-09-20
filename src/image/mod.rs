@@ -58,6 +58,15 @@ impl Image {
         }
     }
 
+    /// Returns a pixel at a given coordinate but using signed coordinates
+    pub fn pixel_at_isize(&self, x: isize, y: isize) -> Option<Color> {
+        if x < 0 || y < 0 {
+            None
+        } else {
+            self.pixel_at(x as usize, y as usize)
+        }
+    }
+
     /// Sets the pixel at a given coordinate. Returns and error if out of bounds.
     pub fn set_pixel_at(&mut self, x: usize, y: usize, c: Color) -> Result<(), String> {
         if x < self.width && y < self.height {
@@ -66,6 +75,25 @@ impl Image {
         } else {
             Err(String::from("Coordinate is out of bounds"))
         }
+    }
+
+    /// Sets the pixel at a given coordinate using signed coordinates, returns aan error if out of bounds.
+    pub fn set_pixel_at_isize(&mut self, x: isize, y: isize, c: Color) -> Result<(), String> {
+        if x < 0 || y < 0 {
+            Err(String::from("Cannot set pixel at negative coordinates"))
+        } else {
+            self.set_pixel_at(x as usize, y as usize, c)
+        }
+    }
+
+    /// Returns the colors and positions of pixels neighbouring (x, y).
+    pub fn get_neighbouring_pixels(&self, x: isize, y: isize) -> Vec<((usize, usize), Color)> {
+        let offsets = vec![(-1, 0), (1, 0), (0, -1), (0, 1)];
+        return offsets.iter()
+            .map(|o| (o, self.pixel_at_isize(x + o.0, y + o.1)))
+            .filter(|(_, c)| c.is_some())
+            .map(|(o, c)| ((o.0 as usize, 0.1 as usize), c.unwrap()))
+            .collect();
     }
 
     /// Writes the image to a file
@@ -93,7 +121,7 @@ impl Image {
                     }
 
                     value_acc += value;
-                },
+                }
 
                 None => continue,
             }
@@ -110,12 +138,32 @@ impl Image {
             for y in 0..filtered.height() {
                 filtered.set_pixel_at(
                     x, y,
-                    self.kernel_filter_pixel(x, y, kernel)
+                    self.kernel_filter_pixel(x, y, kernel),
                 ).unwrap();
             }
         }
 
         return filtered;
+    }
+
+    pub fn overlay(&mut self, top: &Image) -> Result<(), String> {
+        if self.width != top.width || self.height != top.height {
+            return Err(String::from("Images not the same size, cannot overlay"));
+        }
+
+        for x in 0..self.width() {
+            for y in 0..self.height() {
+                let top_color = top.pixel_at(x, y).unwrap();
+                let bottom_color = self.pixel_at(x, y).unwrap();
+
+                let factor = top_color[3] as f64 / u8::MAX as f64;
+                let mixed = Color::interpolate(bottom_color, top_color, factor);
+
+                self.set_pixel_at(x, y, mixed).unwrap();
+            }
+        }
+
+        return Ok(());
     }
 }
 
