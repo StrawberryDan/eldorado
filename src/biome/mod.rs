@@ -4,14 +4,22 @@ use crate::color::Color;
 use std::ffi::OsStr;
 use std::io::Read;
 use crate::image::Image;
+use std::collections::HashMap;
+use std::path::{PathBuf, Path};
+
+mod glyphs;
 
 struct BiomeSettings {
     color: Color,
     outline_color: Color,
     outline_thickness: u64,
+    glyph_image: Option<PathBuf>,
+    glyph_density: usize,
+    glyph_threshold: usize,
 }
 
 pub struct Configuration {
+    glyphs: HashMap<PathBuf, Image>,
     mapping: Vec<(Color, BiomeSettings)>,
 }
 
@@ -31,7 +39,7 @@ impl Configuration {
     fn from_json(json: JsonValue) -> Result<Self, String> {
         use std::str::FromStr;
 
-        let mut configuration = Configuration { mapping: Vec::new() };
+        let mut configuration = Configuration { glyphs: HashMap::new(), mapping: Vec::new() };
 
         for (key, settings) in json.entries() {
             let key_color = match Color::from_str(key) {
@@ -60,10 +68,47 @@ impl Configuration {
                 _ => 0,
             };
 
+            let glyph_image = match settings["glyph_image"].as_str() {
+                Some(s) => {
+                    let as_path = PathBuf::from(s);
+                    if !configuration.glyphs.contains_key(&as_path) {
+                        if !as_path.exists() {
+                            return Err(format!("Image file: {} does not exist", as_path.to_str().unwrap()));
+                        }
+
+                        let image = match Image::from_file(s) {
+                            Ok(i) => i,
+                            Err(m) => return Err(format!("Could not load glyph {} because {}", as_path.to_str().unwrap(), m)),
+                        };
+
+                        configuration.glyphs.insert(as_path.clone(), image);
+                    }
+
+                    Some(as_path)
+                }
+                None if settings.has_key("glpyh_image") => return Err(String::from("Non string/filepath given for glyph image")),
+                _ => None,
+            };
+
+            let glyph_density = match settings["glyph_density"].as_u64() {
+                Some(v) => v as usize,
+                None if settings.has_key("glyph_density") => return Err(String::from("Invalid data for glyph density")),
+                _ => 1,
+            };
+
+            let glyph_threshold = match settings["glyph_threshold"].as_u64() {
+                Some(v) => v as usize,
+                None if settings.has_key("glyph_threshold") => return Err(String::from("Invalid data for glyph density")),
+                _ => 100,
+            };
+
             configuration.mapping.push((key_color, BiomeSettings {
                 color,
                 outline_color,
                 outline_thickness,
+                glyph_image,
+                glyph_density,
+                glyph_threshold,
             }));
         }
 
@@ -72,10 +117,11 @@ impl Configuration {
         return Ok(configuration);
     }
 
-    pub fn generate_layer(&self, biome_map: Image) -> Result<Image, String> {
+    pub fn generate_layer(&self, biome_map: &Image) -> Result<Image, String> {
         let width = biome_map.width();
         let height = biome_map.height();
         let mut layer = Image::new(width, height);
+        let mut glyph_layer = Image::new(width, height);
 
         for entry in &self.mapping {
             let mut biome = Image::new(width, height).fill(Color::from([0, 0, 0, 0]));
@@ -108,8 +154,20 @@ impl Configuration {
                 biome = outlined;
             }
 
+            if entry.1.glyph_image.is_some() {
+                let glyph = entry.1.glyph_image.clone().unwrap();
+                let glyph = self.glyphs.get(&glyph).unwrap();
+
+                let distrib = glyphs::GlyphDistribution::new([52; 32], entry.1.glyph_density, entry.1.glyph_threshold, glyph, &biome_map, entry.0);
+                let layer = distrib.to_layer();
+
+                glyph_layer.overlay(&layer);
+            }
+
             layer.overlay(&biome)?;
         }
+
+        layer.overlay(&glyph_layer);
 
         return Ok(layer);
     }
@@ -129,7 +187,7 @@ mod test {
         let configuration = Configuration::from_file("samples/biomes.json").unwrap();
         let map = Image::from_file("samples/biomes.png").unwrap();
 
-        let biome_map = configuration.generate_layer(map).unwrap();
+        let biome_map = configuration.generate_layer(&map).unwrap();
 
         biome_map.write_to_file("samples/biome_map.png").unwrap();
     }

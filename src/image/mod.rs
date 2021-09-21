@@ -146,6 +146,28 @@ impl Image {
         return filtered;
     }
 
+    pub fn stamp(&mut self, pos: (usize, usize), stamp: &Image) {
+        for x in 0..stamp.width() {
+            for y in 0..stamp.height() {
+                let gx = x + pos.0;
+                let gy = y + pos.1;
+
+                if gx < 0 || gy < 0 || gx >= self.width || gy >= self.height {
+                    continue;
+                }
+
+                let top_color = stamp.pixel_at(x, y).unwrap();
+                let bottom_color = self.pixel_at(gx, gy).unwrap();
+
+                let factor = top_color[3] as f64 / u8::MAX as f64;
+
+                let mixed = Color::interpolate(bottom_color, top_color, factor);
+
+                self.set_pixel_at(gx, gy, mixed).unwrap();
+            }
+        }
+    }
+
     pub fn overlay(&mut self, top: &Image) -> Result<(), String> {
         if self.width != top.width || self.height != top.height {
             return Err(String::from("Images not the same size, cannot overlay"));

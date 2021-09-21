@@ -14,26 +14,45 @@ Using the following biome bitmap of earth and the following json configuration f
 ```json
 {
   "#40ffff": {},
+
   "#00c000": {
-    "outline_thickness": 2
+    "outline_thickness": 1,
+    "glyph_image": "samples/tree_glyph.png",
+    "glyph_density": 75
   },
+
   "#004040": {
     "color": "00404080"
   },
-  "#404000": {},
-  "#ffff40": {
-    "color": "#ff8000"
+
+  "#404000": {
+    "glyph_image": "samples/grass_glyph.png",
+    "glyph_density": 95
   },
+
+  "#ffff40": {
+    "color": "#ff8000",
+    "glyph_image": "samples/sand_glyph.png",
+    "glyph_density": 50,
+    "glyph_threshold": 99
+  },
+
   "#004000": {
     "outline_thickness": 2,
     "outline_color": "#ff00e7"
   },
+
   "#808000": {},
-  "#c0c0c0": {}
+
+  "#c0c0c0": {
+    "glyph_image": "samples/peak_glyph.png",
+    "glyph_density": 90,
+    "glyph_threshold": 80
+  }
 }
 ```
 
-images such as this can be quickly produced. As you can see the shading of the biomes can be changed (including transparency) and the biomes may be outlined with different colors.
+images such as this can be quickly produced. As you can see the shading of the biomes can be changed (including transparency) and the biomes may be outlined with different colors. Furthermore some glyphs have been added to random spots in some biomes.
 
 ![Processed Biome Map of Earth](samples/biome_map.png)
 

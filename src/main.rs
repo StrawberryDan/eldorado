@@ -1,4 +1,5 @@
 extern crate png;
+extern crate rand;
 extern crate json;
 
 pub mod color;
