@@ -1,9 +1,7 @@
 use crate::image::Image;
-use std::collections::HashSet;
 use rand::rngs::SmallRng;
 use rand::{SeedableRng, RngCore};
 use crate::color::Color;
-use crate::topography::generate_contour_layer;
 use std::sync::{Arc, Mutex};
 
 const OVERLAP_PREVENTION: usize = 1;
@@ -28,19 +26,19 @@ impl GlyphDistribution {
             x += glyph.width() + glyph.width() / 2 + OVERLAP_PREVENTION;
         }
 
-        let mut rng = Arc::new(Mutex::new(SmallRng::from_seed(seed)));
+        let rng = Arc::new(Mutex::new(SmallRng::from_seed(seed)));
 
         possible_locations = possible_locations.into_iter()
             // Apply random selection
-            .filter(|(x, y)| {
+            .filter(|_| {
                 let r_value = rng.lock().unwrap().next_u32() as usize;
                 (r_value % 100) < density
             })
-            // Remove locations not in biome
+            // Remove locations not in region
             .filter(|(x, y)| {
                 map.pixel_at(*x as usize, *y as usize).unwrap() == color
             })
-            // Wiggle the locations a small ammount
+            // Wiggle the locations a small amount
             .map(|(x, y)| {
                 let r1 = (rng.lock().unwrap().next_u32() as usize % (glyph.width() - OVERLAP_PREVENTION)) as isize - glyph.width() as isize / 2;
                 let r2 = (rng.lock().unwrap().next_u32() as usize % (glyph.height() - OVERLAP_PREVENTION)) as isize - glyph.height() as isize / 2;

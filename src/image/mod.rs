@@ -152,7 +152,7 @@ impl Image {
                 let gx = x + pos.0;
                 let gy = y + pos.1;
 
-                if gx < 0 || gy < 0 || gx >= self.width || gy >= self.height {
+                if gx >= self.width || gy >= self.height {
                     continue;
                 }
 

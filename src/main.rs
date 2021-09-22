@@ -7,7 +7,7 @@ pub mod image;
 pub mod math;
 pub mod topography;
 pub mod vector;
-pub mod biome;
+pub mod region;
 
 fn main() {
     println!("Hello, world!");

@@ -5,7 +5,7 @@ data to create a clean readable map. Excellent for things like table to scenario
 
 ## Features
 
-### Biome Colouring
+### Regions and Glyphs
 
 Using the following biome bitmap of earth and the following json configuration file:
 
@@ -52,11 +52,9 @@ Using the following biome bitmap of earth and the following json configuration f
 }
 ```
 
-images such as this can be quickly produced. As you can see the shading of the biomes can be changed (including transparency) and the biomes may be outlined with different colors. Furthermore some glyphs have been added to random spots in some biomes.
+images such as this can be quickly produced. As you can see the shading of the regions can be changed (including transparency) and the regions may be outlined with different colors. Furthermore some glyphs have been added to random spots in some regions.
 
-![Processed Biome Map of Earth](samples/biome_map.png)
-
-### Glyphs
+![Processed Region Map of Earth](samples/region_map.png)
 
 ### Roads and Paths
 
@@ -85,3 +83,7 @@ This gives an illusion of depth.
 Shading every pixel in the heightmap according to some imaginary light source also gives an impression of depth.
 
 ![Heightmap of the earth given relief shading](samples/relief_shaded.png)
+
+## Planned Features
+
+* Better region glyph distribution

@@ -5,7 +5,7 @@ use std::ffi::OsStr;
 use std::io::Read;
 use crate::image::Image;
 use std::collections::HashMap;
-use std::path::{PathBuf, Path};
+use std::path::{PathBuf};
 
 mod glyphs;
 
@@ -52,13 +52,13 @@ impl Configuration {
                     Color::from_str(s)?
                 }
 
-                None if settings.has_key("color") => return Err(format!("Cannot parse {} as biome color", &settings["color"])),
+                None if settings.has_key("color") => return Err(format!("Cannot parse {} as region color", &settings["color"])),
                 _ => key_color,
             };
 
             let outline_color = match &settings["outline_color"].as_str() {
                 Some(s) => Color::from_str(s)?,
-                None if settings.has_key("outline_color") => return Err(String::from("Non color string given as biome outline color")),
+                None if settings.has_key("outline_color") => return Err(String::from("Non color string given as region outline color")),
                 _ => Color::from([0, 0, 0, 255]),
             };
 
@@ -86,7 +86,7 @@ impl Configuration {
 
                     Some(as_path)
                 }
-                None if settings.has_key("glpyh_image") => return Err(String::from("Non string/filepath given for glyph image")),
+                None if settings.has_key("glyph_image") => return Err(String::from("Non string/filepath given for glyph image")),
                 _ => None,
             };
 
@@ -134,12 +134,12 @@ impl Configuration {
                 }
             }
 
-            for i in 0..entry.1.outline_thickness {
+            for _i in 0..entry.1.outline_thickness {
                 let mut outlined = biome.clone();
 
                 for x in 0..width {
                     for y in 0..height {
-                        // Check if neighbour is biome color or outline color (But not itself biome color)
+                        // Check if neighbour is region color or outline color (and must also be itself region color)
                         if biome.pixel_at(x, y).unwrap() != entry.1.color { continue; }
                         let neighbours = biome.get_neighbouring_pixels(x as isize, y as isize)
                             .iter().filter(|(_, c)| *c == Color::from([0, 0, 0, 0]) || *c == entry.1.outline_color)
@@ -161,13 +161,13 @@ impl Configuration {
                 let distrib = glyphs::GlyphDistribution::new([52; 32], entry.1.glyph_density, entry.1.glyph_threshold, glyph, &biome_map, entry.0);
                 let layer = distrib.to_layer();
 
-                glyph_layer.overlay(&layer);
+                glyph_layer.overlay(&layer).unwrap();
             }
 
             layer.overlay(&biome)?;
         }
 
-        layer.overlay(&glyph_layer);
+        layer.overlay(&glyph_layer).unwrap();
 
         return Ok(layer);
     }
@@ -189,6 +189,6 @@ mod test {
 
         let biome_map = configuration.generate_layer(&map).unwrap();
 
-        biome_map.write_to_file("samples/biome_map.png").unwrap();
+        biome_map.write_to_file("../../samples/region_map.png").unwrap();
     }
 }
