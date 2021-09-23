@@ -190,6 +190,33 @@ impl Image {
     }
 }
 
+impl IntoIterator for Image {
+    type Item = Color;
+    type IntoIter = ImageIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ImageIterator {
+            cursor: 0,
+            pixels: self.data,
+        }
+    }
+}
+
+pub struct ImageIterator {
+    cursor: usize,
+    pixels: Vec<Color>,
+}
+
+impl Iterator for ImageIterator {
+    type Item = Color;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result = self.pixels.get(self.cursor).map(|p| *p);
+        self.cursor += 1;
+        return result;
+    }
+}
+
 impl Clone for Image {
     fn clone(&self) -> Self {
         Image {

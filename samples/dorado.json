@@ -1,0 +1,41 @@
+{
+  "topography": {
+    "samples/biomes_height.png": {
+      "type": "shaded"
+    }
+  },
+
+  "regions": {
+    "samples/biomes.png": {
+      "#40ffff": {},
+      "#00c000": {
+        "outline_thickness": 1,
+        "glyph_image": "samples/tree_glyph.png",
+        "glyph_density": 75
+      },
+      "#004040": {
+        "color": "00404080"
+      },
+      "#404000": {
+        "glyph_image": "samples/grass_glyph.png",
+        "glyph_density": 95
+      },
+      "#ffff40": {
+        "color": "#B08000",
+        "glyph_image": "samples/sand_glyph.png",
+        "glyph_density": 75,
+        "glyph_threshold": 75
+      },
+      "#004000": {
+        "outline_thickness": 2,
+        "outline_color": "#ff00e7"
+      },
+      "#808000": {},
+      "#c0c0c0": {
+        "glyph_image": "samples/peak_glyph.png",
+        "glyph_density": 90,
+        "glyph_threshold": 80
+      }
+    }
+  }
+}

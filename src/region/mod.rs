@@ -24,19 +24,19 @@ pub struct Configuration {
 }
 
 impl Configuration {
-    fn from_file(file: impl AsRef<OsStr>) -> Result<Self, String> {
+    pub fn from_file(file: impl AsRef<OsStr>) -> Result<Self, String> {
         let mut file = std::fs::File::open(file.as_ref()).map_err(|e| e.to_string())?;
         let mut string = String::new();
         file.read_to_string(&mut string).map_err(|e| e.to_string())?;
         return Self::from_string(string);
     }
 
-    fn from_string(string: impl AsRef<str>) -> Result<Self, String> {
+    pub fn from_string(string: impl AsRef<str>) -> Result<Self, String> {
         let json = json::parse(string.as_ref()).map_err(|e| e.to_string())?;
-        return Self::from_json(json);
+        return Self::from_json(&json);
     }
 
-    fn from_json(json: JsonValue) -> Result<Self, String> {
+    pub fn from_json(json: &JsonValue) -> Result<Self, String> {
         use std::str::FromStr;
 
         let mut configuration = Configuration { glyphs: HashMap::new(), mapping: Vec::new() };
@@ -179,12 +179,12 @@ mod test {
 
     #[test]
     fn read_configuration() {
-        Configuration::from_file("samples/biomes.json").unwrap();
+        Configuration::from_file("samples/regions.json").unwrap();
     }
 
     #[test]
     fn generate_layer() {
-        let configuration = Configuration::from_file("samples/biomes.json").unwrap();
+        let configuration = Configuration::from_file("samples/regions.json").unwrap();
         let map = Image::from_file("samples/biomes.png").unwrap();
 
         let biome_map = configuration.generate_layer(&map).unwrap();

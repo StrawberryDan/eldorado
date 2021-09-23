@@ -37,24 +37,28 @@ impl HeightMap {
         let mut data = Vec::with_capacity(width * height);
 
         while data.len() < width * height {
-            if let png::ColorType::Grayscale = info.color_type {
-                match info.bit_depth {
-                    png::BitDepth::Eight => {
-                        let mut bytes = [0u8; 1];
-                        reader.read(&mut bytes).map_err(|e| e.to_string())?;
-                        data.push((bytes[0] as u16) << 8);
-                    }
+            match info.color_type {
+                png::ColorType::Grayscale => {
+                    match info.bit_depth {
+                        png::BitDepth::Eight => {
+                            let mut bytes = [0u8; 1];
+                            reader.read(&mut bytes).map_err(|e| e.to_string())?;
+                            data.push((bytes[0] as u16) << 8);
+                        }
 
-                    png::BitDepth::Sixteen => {
-                        let mut bytes = [0u8; 2];
-                        reader.read(&mut bytes).map_err(|e| e.to_string())?;
-                        bytes.reverse();
-                        let value = unsafe { std::mem::transmute::<[u8; 2], u16>(bytes) };
-                        data.push(value);
-                    }
+                        png::BitDepth::Sixteen => {
+                            let mut bytes = [0u8; 2];
+                            reader.read(&mut bytes).map_err(|e| e.to_string())?;
+                            bytes.reverse();
+                            let value = unsafe { std::mem::transmute::<[u8; 2], u16>(bytes) };
+                            data.push(value);
+                        }
 
-                    _ => { return Err(String::from("Invalid Bit depth for height map")); }
+                        _ => { return Err(String::from("Invalid Bit depth for height map")); }
+                    }
                 }
+
+                _ => return Err(String::from("Invalid color type for a height map!")),
             }
         }
 
@@ -179,19 +183,26 @@ impl HeightMap {
 
     /// Returns the direction a given cell faces (North facing, South facing .etc)
     /// Returns None if coordinate is out of range
-    pub fn surface_normal(&self, x: usize, y: usize) -> Option<Vector<2>> {
-        return if x <= 0 || x >= self.width() - 1 || y <= 0 || y >= self.height() - 1 {
-            None
-        } else {
-            let l = self.height_at(x - 1, y)? as f64;
-            let r = self.height_at(x + 1, y)? as f64;
-            let t = self.height_at(x, y - 1)? as f64;
-            let b = self.height_at(x, y + 1)? as f64;
+    pub fn surface_normal(&self, x: usize, y: usize) -> Vector<3> {
+        let mut normal = Vector::from([0.0, 0.0, 1.0]);
+        let cheight = self.height_at(x, y).unwrap();
 
-            let dx = (r - l) / 2.0;
-            let dy = (b - t) / 2.0;
+        let offsets = [(1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1)];
+        for offset in offsets {
+            let x = x as isize + offset.0;
+            let y = y as isize + offset.1;
+            let height = self.height_at(x as usize, y as usize);
+            if height.is_none() { continue; }
+            let height = height.unwrap();
 
-            Some(Vector::from([-dx, -dy]).normalise())
-        };
+            let diff = height as i32 - cheight as i32;
+
+            let offvec = Vector::from([offset.0 as f64, offset.1 as f64, 0.0]);
+            normal += offvec * -diff as f64;
+        }
+
+        return normal.normalise();
     }
 }
+
+

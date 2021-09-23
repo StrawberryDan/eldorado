@@ -1,3 +1,6 @@
+use std::fmt::{Display, Formatter};
+use std::hint::unreachable_unchecked;
+
 /// Variable size vector structure.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Vector<const S: usize> {
@@ -27,7 +30,11 @@ impl<const S: usize> Vector<S> {
 
     /// Static method that calculates the dot product of 2 vectors
     pub fn dot(a: Self, b: Self) -> f64 {
-        (0..S).map(|i| a[i] * b[i]).sum::<f64>()
+        let mut sum = 0.0;
+        for i in 0..S {
+            sum += a[i] * b[i];
+        }
+        return sum;
     }
 }
 
@@ -126,5 +133,20 @@ impl<const S: usize> std::ops::IndexMut<usize> for Vector<S> {
 impl<const S: usize> From<[f64; S]> for Vector<S> {
     fn from(data: [f64; S]) -> Self {
         Vector { data }
+    }
+}
+
+impl <const S: usize> Display for Vector<S> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[")?;
+        for v in self.data.iter().enumerate() {
+            if v.0 == S - 1 {
+                return write!(f, "{}]", v.1);
+            } else {
+                write!(f, "{}, ", v.0)?;
+            }
+        }
+
+        unreachable!();
     }
 }

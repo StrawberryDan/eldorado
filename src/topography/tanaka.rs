@@ -10,7 +10,7 @@ pub struct Settings {
     /// Color to point cells with no contour line on them.
     background_color: Color,
     /// Direction that light will shine from in image space.
-    light_dir: Vector<2>,
+    light_dir: Vector<3>,
 
     cleaning_factor: usize,
 }
@@ -22,7 +22,7 @@ impl Default for Settings {
             light_color: Color::from([255, 255, 255]),
             dark_color: Color::from([0, 0, 0]),
             background_color: Color::from([0, 0, 0, 0]),
-            light_dir: Vector::from([1.0, 1.0]),
+            light_dir: Vector::from([1.0, 1.0, -1.0]),
             cleaning_factor: 2,
         }
     }
@@ -47,10 +47,8 @@ pub fn generate(heightmap: &HeightMap, settings: Settings) -> Image {
             if contours.pixel_at(x, y).unwrap() == contour_line_color {
                 // Work out light value
                 let normal = heightmap.surface_normal(x, y);
-                let light = match normal {
-                    Some(normal) => Vector::dot(settings.light_dir, normal),
-                    None => continue,
-                };
+                let light = Vector::dot(normal, settings.light_dir);
+
 
                 // Paint cell
                 let c = if light < 0.0 {
